@@ -1,0 +1,32 @@
+{
+  "name": "iic",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js",
+    "dev": "nodemon server.js",
+    "prod": "node server.js",
+    "test-setup": "node test-setup.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.6",
+    "nodemon": "^3.1.10",
+    "twilio": "^5.3.4",
+    "@google-cloud/speech": "^6.7.0",
+    "@google-cloud/text-to-speech": "^5.5.0",
+    "@google/generative-ai": "^0.21.0",
+    "form-data": "^4.0.0"
+  }
+}

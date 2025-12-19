@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Testing Face API Endpoints</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function testAPI() {
+            const baseUrl = 'http://localhost:5000/api/faces';
+            const testUserId = 'test@example.com';
+            
+            // Test 1: Check enrollment status
+            try {
+                results.innerHTML += '<h3>Testing Enrollment Status</h3>';
+                const response = await fetch(`${baseUrl}/enrollment-status/${testUserId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML += `<p style="color: green;">✅ Enrollment status: ${JSON.stringify(data)}</p>`;
+                } else {
+                    results.innerHTML += `<p style="color: red;">❌ Enrollment status failed: ${response.status}</p>`;
+                }
+            } catch (error) {
+                results.innerHTML += `<p style="color: red;">❌ Enrollment status error: ${error.message}</p>`;
+            }
+            
+            // Test 2: Test enrollment
+            try {
+                results.innerHTML += '<h3>Testing Face Enrollment</h3>';
+                const enrollmentData = {
+                    userId: testUserId,
+                    descriptor: Array.from({length: 128}, () => Math.random()),
+                    timestamp: new Date().toISOString()
+                };
+                
+                const response = await fetch(`${baseUrl}/enroll`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(enrollmentData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML += `<p style="color: green;">✅ Enrollment successful: ${JSON.stringify(data)}</p>`;
+                } else {
+                    results.innerHTML += `<p style="color: red;">❌ Enrollment failed: ${response.status}</p>`;
+                }
+            } catch (error) {
+                results.innerHTML += `<p style="color: red;">❌ Enrollment error: ${error.message}</p>`;
+            }
+            
+            // Test 3: Get user faces
+            try {
+                results.innerHTML += '<h3>Testing Get User Faces</h3>';
+                const response = await fetch(`${baseUrl}/${testUserId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML += `<p style="color: green;">✅ Get faces: ${data.length} faces found</p>`;
+                } else {
+                    results.innerHTML += `<p style="color: red;">❌ Get faces failed: ${response.status}</p>`;
+                }
+            } catch (error) {
+                results.innerHTML += `<p style="color: red;">❌ Get faces error: ${error.message}</p>`;
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>
+

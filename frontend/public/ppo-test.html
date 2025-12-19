@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPO Field Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">PPO Field Test</h1>
+        
+        <div class="bg-red-100 border-4 border-red-500 p-4 rounded-lg shadow-lg mb-4">
+            <label class="block text-lg font-bold text-red-800 mb-2">
+                🔴 P.P.O Number * (REQUIRED FIELD)
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                </div>
+                <input
+                    id="ppoNumber"
+                    name="ppoNumber"
+                    type="text"
+                    required
+                    maxLength="12"
+                    class="block w-full pl-12 pr-3 py-4 border-4 border-red-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-500 focus:border-red-500 transition-colors duration-300 bg-white text-lg font-semibold"
+                    placeholder="Enter 12-digit P.P.O number"
+                />
+            </div>
+            <p class="text-sm text-red-700 mt-2 font-semibold">⚠️ This field is MANDATORY for government benefits verification</p>
+        </div>
+        
+        <div class="bg-green-100 border-2 border-green-500 p-3 rounded-lg">
+            <p class="text-sm font-bold text-green-800">✅ If you can see this red PPO field above, then the styling is working correctly!</p>
+        </div>
+    </div>
+</body>
+</html>
+

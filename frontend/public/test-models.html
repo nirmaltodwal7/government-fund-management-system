@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Model Test</title>
+</head>
+<body>
+    <h1>Testing Model Accessibility</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function testModelAccess() {
+            const models = [
+                'tiny_face_detector_model-weights_manifest.json',
+                'face_landmark_68_model-weights_manifest.json',
+                'face_recognition_model-weights_manifest.json'
+            ];
+            
+            for (const model of models) {
+                try {
+                    const response = await fetch(`/models/${model}`);
+                    if (response.ok) {
+                        results.innerHTML += `<p style="color: green;">✅ ${model} - Accessible</p>`;
+                    } else {
+                        results.innerHTML += `<p style="color: red;">❌ ${model} - Not accessible (${response.status})</p>`;
+                    }
+                } catch (error) {
+                    results.innerHTML += `<p style="color: red;">❌ ${model} - Error: ${error.message}</p>`;
+                }
+            }
+        }
+        
+        testModelAccess();
+    </script>
+</body>
+</html>
+

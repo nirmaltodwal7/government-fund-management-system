@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Detection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .video-container {
+            position: relative;
+            display: inline-block;
+        }
+        video {
+            width: 640px;
+            height: 480px;
+            border: 2px solid #ccc;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Face Detection Test</h1>
+    <div class="container">
+        <div class="video-container">
+            <video id="video" autoplay muted playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn">Start Camera</button>
+            <button id="detectBtn" disabled>Test Detection</button>
+            <button id="enrollBtn" disabled>Enroll Face</button>
+            <button id="stopBtn" disabled>Stop Camera</button>
+        </div>
+        
+        <div id="status"></div>
+        
+        <div class="debug-info" id="debugInfo">
+            <strong>Debug Information:</strong><br>
+            Models Loaded: <span id="modelsStatus">Loading...</span><br>
+            Video Ready: <span id="videoStatus">No</span><br>
+            Video Size: <span id="videoSize">N/A</span><br>
+            Detection Count: <span id="detectionCount">0</span><br>
+            Last Detection: <span id="lastDetection">Never</span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const startBtn = document.getElementById('startBtn');
+        const detectBtn = document.getElementById('detectBtn');
+        const enrollBtn = document.getElementById('enrollBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const status = document.getElementById('status');
+        
+        const modelsStatus = document.getElementById('modelsStatus');
+        const videoStatus = document.getElementById('videoStatus');
+        const videoSize = document.getElementById('videoSize');
+        const detectionCount = document.getElementById('detectionCount');
+        const lastDetection = document.getElementById('lastDetection');
+        
+        let stream = null;
+        let modelsLoaded = false;
+        let detectionCountValue = 0;
+        let faceDetected = false;
+        
+        // Load models
+        async function loadModels() {
+            try {
+                showStatus('Loading face detection models...', 'info');
+                
+                await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+                await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+                await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+                
+                modelsLoaded = true;
+                modelsStatus.textContent = 'Yes';
+                showStatus('Models loaded successfully!', 'success');
+                detectBtn.disabled = false;
+            } catch (error) {
+                console.error('Error loading models:', error);
+                modelsStatus.textContent = 'No';
+                showStatus('Failed to load models: ' + error.message, 'error');
+            }
+        }
+        
+        // Start camera
+        async function startCamera() {
+            try {
+                showStatus('Requesting camera access...', 'info');
+                
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    }
+                });
+                
+                video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    videoStatus.textContent = 'Yes';
+                    videoSize.textContent = `${video.videoWidth}x${video.videoHeight}`;
+                    showStatus('Camera started successfully!', 'success');
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                };
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                showStatus('Camera access denied: ' + error.message, 'error');
+            }
+        }
+        
+        // Test face detection
+        async function testDetection() {
+            if (!modelsLoaded || !video.videoWidth) {
+                showStatus('Models not loaded or video not ready', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Testing face detection...', 'info');
+                
+                const detections = await faceapi
+                    .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({
+                        inputSize: 416,
+                        scoreThreshold: 0.5
+                    }))
+                    .withFaceLandmarks()
+                    .withFaceDescriptors();
+                
+                detectionCountValue += detections.length;
+                detectionCount.textContent = detectionCountValue;
+                lastDetection.textContent = new Date().toLocaleTimeString();
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (detections.length > 0) {
+                    faceDetected = true;
+                    enrollBtn.disabled = false;
+                    showStatus(`Detected ${detections.length} face(s)!`, 'success');
+                    
+                    // Draw detections
+                    detections.forEach(detection => {
+                        const { x, y, width, height } = detection.detection.box;
+                        
+                        // Draw bounding box
+                        ctx.strokeStyle = '#00ff00';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, y, width, height);
+                        
+                        // Draw landmarks
+                        if (detection.landmarks) {
+                            ctx.fillStyle = '#ff0000';
+                            detection.landmarks.positions.forEach(point => {
+                                ctx.beginPath();
+                                ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
+                                ctx.fill();
+                            });
+                        }
+                    });
+                } else {
+                    faceDetected = false;
+                    enrollBtn.disabled = true;
+                    showStatus('No faces detected', 'info');
+                }
+                
+            } catch (error) {
+                console.error('Error detecting faces:', error);
+                showStatus('Detection error: ' + error.message, 'error');
+            }
+        }
+        
+        // Stop camera
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            video.srcObject = null;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            videoStatus.textContent = 'No';
+            videoSize.textContent = 'N/A';
+            
+            showStatus('Camera stopped', 'info');
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        // Enroll face function
+        function enrollFace() {
+            if (faceDetected) {
+                showStatus('Face enrollment would happen here!', 'success');
+            } else {
+                showStatus('No face detected for enrollment', 'error');
+            }
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', startCamera);
+        detectBtn.addEventListener('click', testDetection);
+        enrollBtn.addEventListener('click', enrollFace);
+        stopBtn.addEventListener('click', stopCamera);
+        
+        // Initialize
+        loadModels();
+    </script>
+</body>
+</html>
