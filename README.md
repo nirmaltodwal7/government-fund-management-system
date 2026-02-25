@@ -1,4 +1,4 @@
-# 🏛️ Government Fund Management System (NIDHI-SETU)
+# 🏛️ Government 
 
 > **NIDHI-SETU** – *A Secure Bridge Between Citizens and Government Funds*
 
